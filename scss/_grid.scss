@@ -1,0 +1,25 @@
+.grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	width: 100%;
+	padding-top: 80px;
+
+	&__item {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		background-color: #bbbbbb;
+		border: 1px solid #707070;
+		cursor: pointer;
+	}
+}
+
+.selected {
+	color: #707070;
+	font-size: 20px;
+	font-weight: bold;
+	background-color: transparent;
+}
