@@ -1,0 +1,56 @@
+.board {
+	display: inline-grid;
+	grid-template-columns: repeat(12, 40px);
+	grid-template-rows: repeat(12, 40px);
+	gap: 8px;
+
+	& > div {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		border: 1px solid #707070;
+		cursor: pointer;
+
+		transition: background 0.1s ease-in;
+	}
+
+	& > [data-status="hidden"] {
+		background-color: #bbbbbb;
+	}
+
+	& > [data-status="opened"] {
+		color: #707070;
+		font-size: 20px;
+		font-weight: bold;
+		background-color: transparent;
+	}
+
+	& > [data-status="marked"] {
+		&::before {
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			background: url("../icons/flag.png") center no-repeat;
+			content: "";
+		}
+	}
+
+	& > [data-status="mined"] {
+		background-color: #c42828;
+
+		&::before {
+			position: absolute;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			left: 0;
+			background: url("../icons/bomb.png") center no-repeat;
+			content: "";
+		}
+	}
+}
