@@ -1,4 +1,4 @@
-export const CELL_STATUSES = {
+const CELL_STATUSES = {
 	HIDDEN: "hidden",
 	MINED: "mined",
 	OPENED: "opened",
@@ -6,7 +6,8 @@ export const CELL_STATUSES = {
 };
 
 class Cell {
-	constructor(x, y, isMine) {
+	constructor(board, x, y, isMine) {
+		this._board = board;
 		this._x = x;
 		this._y = y;
 		this._isMine = isMine;
@@ -16,44 +17,89 @@ class Cell {
 	create() {
 		const cell = document.createElement("div");
 		cell.dataset.status = CELL_STATUSES.HIDDEN;
-		cell.onclick = this.onClick.bind(this);
-		cell.oncontextmenu = this.onContextMenu.bind(this);
+		cell.addEventListener("click", () => {
+			this.reveal();
+		});
+		cell.addEventListener("contextmenu", (e) => {
+			e.preventDefault();
+			this.mark();
+		});
 
 		return cell;
 	}
 
-	onClick() {
+	reveal() {
 		if (
-			this._elem.dataset.status !== CELL_STATUSES.HIDDEN &&
-			this._elem.dataset.status === CELL_STATUSES.MARKED
+			this.status !== CELL_STATUSES.HIDDEN &&
+			this.status === CELL_STATUSES.MARKED
 		) {
 			return;
 		}
 
 		if (this._isMine) {
-			this._elem.dataset.status = CELL_STATUSES.MINED;
+			this.status = CELL_STATUSES.MINED;
 			return;
 		}
 
-		this._elem.dataset.status = CELL_STATUSES.OPENED;
+		this.status = CELL_STATUSES.OPENED;
+
+		const nearbyCells = this.getNearbyCells();
+		const mines = nearbyCells.filter((cell) => cell._isMine);
+
+		if (mines.length === 0) {
+			nearbyCells.forEach((cell) => cell.reveal());
+		} else {
+			this._elem.textContent = mines.length;
+		}
 	}
 
-	onContextMenu(e) {
-		e.preventDefault();
-
+	mark() {
 		if (
-			this._elem.dataset.status !== CELL_STATUSES.HIDDEN &&
-			(this._elem.dataset.status === CELL_STATUSES.OPENED ||
-				this._elem.dataset.status === CELL_STATUSES.MINED)
+			this.status !== CELL_STATUSES.HIDDEN &&
+			(this.status === CELL_STATUSES.OPENED ||
+				this.status === CELL_STATUSES.MINED)
 		) {
 			return;
 		}
 
-		if (this._elem.dataset.status === CELL_STATUSES.MARKED) {
-			this._elem.dataset.status = CELL_STATUSES.HIDDEN;
-		} else {
-			this._elem.dataset.status = CELL_STATUSES.MARKED;
+		if (this._board.numberOfMines == 0) {
+			return;
 		}
+
+		if (this.status === CELL_STATUSES.MARKED) {
+			this.status = CELL_STATUSES.HIDDEN;
+			this._board.numberOfMarks++;
+			if (this._isMine) {
+				this._board.numberOfMines++;
+			}
+		} else {
+			this.status = CELL_STATUSES.MARKED;
+			this._board.numberOfMarks--;
+			if (this._isMine) {
+				this._board.numberOfMines--;
+			}
+		}
+
+		this._board.updateCounter();
+	}
+
+	getNearbyCells() {
+		const cells = [];
+
+		for (let x = -1; x <= 1; x++) {
+			for (let y = -1; y <= 1; y++) {
+				if (this._x === x && this._y === y) continue;
+
+				const cell = this._board.store[this._x + x]?.[this._y + y];
+
+				if (!cell) continue;
+				if (cell.status === "opened") continue;
+
+				cells.push(cell);
+			}
+		}
+
+		return cells;
 	}
 
 	get elem() {

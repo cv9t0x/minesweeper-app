@@ -7,8 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
 function init() {
 	const boardEl = document.querySelector(".board");
 	const boardSize = 12;
-	const numberOfMines = 100;
-	const board = new Board(boardEl, boardSize, numberOfMines);
+	const numberOfMines = 15;
+	const counterEl = document.querySelector(".counter");
+
+	const board = new Board(boardEl, boardSize, numberOfMines, counterEl);
 
 	console.log(board);
 }
