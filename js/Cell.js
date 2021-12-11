@@ -22,7 +22,8 @@ class Cell {
 		cell.setAttribute("tabindex", `${Cell.count++}`);
 
 		cell.addEventListener("click", this.onClickHandler.bind(this));
-		cell.addEventListener("keypress", this.onKeyDownHandler.bind(this));
+		cell.addEventListener("mouseover", this.onMouseOverHandler.bind(this));
+		cell.addEventListener("keydown", this.onKeyDownHandler.bind(this));
 		cell.addEventListener("contextmenu", this.onContextMenuHandler.bind(this));
 
 		return cell;
@@ -120,41 +121,48 @@ class Cell {
 		this.board.checkGameState();
 	}
 
+	onMouseOverHandler() {
+		this.elem.focus();
+	}
+
 	onKeyDownHandler(e) {
-		if (e.code === "KeyW" || e.code === "ArrowUp") {
-			if (this.x === 0) {
-				this.board.store.cells[this.board.store.cells.length - 1][
-					this.y
-				].elem.focus();
-			} else {
-				this.board.store.cells[this.x - 1][this.y].elem.focus();
-			}
-		}
-
-		if (e.code === "KeyS" || e.code === "ArrowDown") {
-			if (this.x === this.board.store.cells.length - 1) {
-				this.board.store.cells[0][this.y].elem.focus();
-			} else {
-				this.board.store.cells[this.x + 1][this.y].elem.focus();
-			}
-		}
-
-		if (e.code === "KeyD" || e.code === "ArrowRight") {
-			if (this.y === this.board.store.cells.length - 1) {
-				this.board.store.cells[this.x][0].elem.focus();
-			} else {
-				this.board.store.cells[this.x][this.y + 1].elem.focus();
-			}
-		}
-
-		if (e.code === "KeyA" || e.code === "ArrowLeft") {
-			if (this.y === 0) {
-				this.board.store.cells[this.x][
-					this.board.store.cells.length - 1
-				].elem.focus();
-			} else {
-				this.board.store.cells[this.x][this.y - 1].elem.focus();
-			}
+		switch (e.code) {
+			case "KeyW":
+			case "ArrowUp":
+				if (this.x === 0) {
+					this.board.store.cells[this.board.store.cells.length - 1][
+						this.y
+					].elem.focus();
+				} else {
+					this.board.store.cells[this.x - 1][this.y].elem.focus();
+				}
+				break;
+			case "KeyS":
+			case "ArrowDown":
+				if (this.x === this.board.store.cells.length - 1) {
+					this.board.store.cells[0][this.y].elem.focus();
+				} else {
+					this.board.store.cells[this.x + 1][this.y].elem.focus();
+				}
+				break;
+			case "KeyD":
+			case "ArrowRight":
+				if (this.y === this.board.store.cells.length - 1) {
+					this.board.store.cells[this.x][0].elem.focus();
+				} else {
+					this.board.store.cells[this.x][this.y + 1].elem.focus();
+				}
+				break;
+			case "KeyA":
+			case "ArrowLeft":
+				if (this.y === 0) {
+					this.board.store.cells[this.x][
+						this.board.store.cells.length - 1
+					].elem.focus();
+				} else {
+					this.board.store.cells[this.x][this.y - 1].elem.focus();
+				}
+				break;
 		}
 
 		if (
@@ -162,9 +170,7 @@ class Cell {
 			(e.code === "Space" || e.code === "Enter")
 		) {
 			this.mark();
-		}
-
-		if (e.code === "Space" || e.code === "Enter") {
+		} else if (e.code === "Space" || e.code === "Enter") {
 			this.elem.focus();
 			this.reveal();
 			this.board.checkGameState();
@@ -185,7 +191,14 @@ class Cell {
 			{ capture: true },
 		);
 		this.elem.addEventListener(
-			"keypress",
+			"mouseover",
+			(e) => {
+				e.stopImmediatePropagation();
+			},
+			{ capture: true },
+		);
+		this.elem.addEventListener(
+			"keydown",
 			(e) => {
 				e.stopImmediatePropagation();
 			},
