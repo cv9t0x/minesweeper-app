@@ -6,6 +6,8 @@ export const CELL_STATUSES = {
 };
 
 class Cell {
+	static count = 0;
+
 	constructor(board, x, y) {
 		this.board = board;
 		this.x = x;
@@ -17,21 +19,13 @@ class Cell {
 	create() {
 		const cell = document.createElement("div");
 		cell.dataset.status = CELL_STATUSES.HIDDEN;
+		cell.setAttribute("tabindex", `${Cell.count++}`);
+
 		cell.addEventListener("click", this.onClickHandler.bind(this));
+		cell.addEventListener("keypress", this.onKeyDownHandler.bind(this));
 		cell.addEventListener("contextmenu", this.onContextMenuHandler.bind(this));
 
 		return cell;
-	}
-
-	onClickHandler() {
-		this.reveal();
-		this.board.checkGameState();
-	}
-
-	onContextMenuHandler(e) {
-		e.preventDefault();
-		this.mark();
-		this.board.checkGameState();
 	}
 
 	reveal() {
@@ -66,6 +60,8 @@ class Cell {
 	}
 
 	mark() {
+		this.elem.focus();
+
 		if (
 			this.status !== CELL_STATUSES.HIDDEN &&
 			(this.status === CELL_STATUSES.OPENED ||
@@ -90,6 +86,7 @@ class Cell {
 		}
 
 		this.board.updateCounter();
+		this.board.checkGameState();
 	}
 
 	getNearbyCells() {
@@ -109,9 +106,86 @@ class Cell {
 		return cells;
 	}
 
+	get status() {
+		return this.elem.dataset.status;
+	}
+
+	set status(status) {
+		this.elem.dataset.status = status;
+	}
+
+	onClickHandler() {
+		this.elem.focus();
+		this.reveal();
+		this.board.checkGameState();
+	}
+
+	onKeyDownHandler(e) {
+		if (e.code === "KeyW") {
+			if (this.x === 0) {
+				this.board.store.cells[this.board.store.cells.length - 1]?.[
+					this.y
+				].elem.focus();
+			} else {
+				this.board.store.cells[this.x - 1]?.[this.y].elem.focus();
+			}
+		}
+
+		if (e.code === "KeyS") {
+			if (this.x === this.board.store.cells.length - 1) {
+				this.board.store.cells[0]?.[this.y].elem.focus();
+			} else {
+				this.board.store.cells[this.x + 1]?.[this.y].elem.focus();
+			}
+		}
+
+		if (e.code === "KeyD") {
+			if (this.y === this.board.store.cells.length - 1) {
+				this.board.store.cells[this.x]?.[0].elem.focus();
+			} else {
+				this.board.store.cells[this.x]?.[this.y + 1].elem.focus();
+			}
+		}
+
+		if (e.code === "KeyA") {
+			if (this.y === 0) {
+				this.board.store.cells[this.x]?.[
+					this.board.store.cells.length - 1
+				].elem.focus();
+			} else {
+				this.board.store.cells[this.x]?.[this.y - 1].elem.focus();
+			}
+		}
+
+		if (
+			(e.ctrlKey || e.metaKey) &&
+			(e.code === "Space" || e.code === "Enter")
+		) {
+			this.mark();
+		}
+
+		if (e.code === "Space" || e.code === "Enter") {
+			this.elem.focus();
+			this.reveal();
+			this.board.checkGameState();
+		}
+	}
+
+	onContextMenuHandler(e) {
+		e.preventDefault();
+		this.mark();
+	}
+
 	removeAllEventListeners() {
 		this.elem.addEventListener(
 			"click",
+			(e) => {
+				e.stopImmediatePropagation();
+			},
+			{ capture: true },
+		);
+		this.elem.addEventListener(
+			"keypress",
 			(e) => {
 				e.stopImmediatePropagation();
 			},
@@ -125,14 +199,6 @@ class Cell {
 			},
 			{ capture: true },
 		);
-	}
-
-	get status() {
-		return this.elem.dataset.status;
-	}
-
-	set status(status) {
-		this.elem.dataset.status = status;
 	}
 }
 
