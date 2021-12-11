@@ -1,5 +1,3 @@
-import Board from "./Board.js";
-
 export const CELL_STATUSES = {
 	HIDDEN: "hidden",
 	MINED: "mined",
@@ -19,15 +17,21 @@ class Cell {
 	create() {
 		const cell = document.createElement("div");
 		cell.dataset.status = CELL_STATUSES.HIDDEN;
-		cell.addEventListener("click", () => {
-			this.reveal();
-		});
-		cell.addEventListener("contextmenu", (e) => {
-			e.preventDefault();
-			this.mark();
-		});
+		cell.addEventListener("click", this.onClickHandler.bind(this));
+		cell.addEventListener("contextmenu", this.onContextMenuHandler.bind(this));
 
 		return cell;
+	}
+
+	onClickHandler() {
+		this.reveal();
+		this.board.checkGameState();
+	}
+
+	onContextMenuHandler(e) {
+		e.preventDefault();
+		this.mark();
+		this.board.checkGameState();
 	}
 
 	reveal() {
@@ -70,25 +74,22 @@ class Cell {
 			return;
 		}
 
-		if (this.board.store.numberOfMines == 0) {
+		if (
+			this.board.store.numberOfMarks == 0 &&
+			this.status !== CELL_STATUSES.MARKED
+		) {
 			return;
 		}
 
 		if (this.status === CELL_STATUSES.MARKED) {
 			this.status = CELL_STATUSES.HIDDEN;
-			//this.board.numberOfMarks++;
-			//if (this.isMine) {
-			//	this.board.numberOfMines++;
-			//}
+			this.board.store.numberOfMarks++;
 		} else {
 			this.status = CELL_STATUSES.MARKED;
-			//this.board.numberOfMarks--;
-			//if (this.isMine) {
-			//	this.board.numberOfMines--;
-			//}
+			this.board.store.numberOfMarks--;
 		}
 
-		//this.board.updateCounter();
+		this.board.updateCounter();
 	}
 
 	getNearbyCells() {
@@ -106,6 +107,24 @@ class Cell {
 		}
 
 		return cells;
+	}
+
+	removeAllEventListeners() {
+		this.elem.addEventListener(
+			"click",
+			(e) => {
+				e.stopImmediatePropagation();
+			},
+			{ capture: true },
+		);
+		this.elem.addEventListener(
+			"contextmenu",
+			(e) => {
+				e.preventDefault();
+				e.stopImmediatePropagation();
+			},
+			{ capture: true },
+		);
 	}
 
 	get status() {

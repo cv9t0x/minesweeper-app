@@ -4,29 +4,32 @@ function getRandom(number) {
 	return Math.floor(Math.random() * number);
 }
 
-const BOARDstateS = {
-	PLAYING: "playing",
-	WIN: "win",
-	LOSE: "lose",
+const BOARD_STATES = {
+	PLAYING: "Playing",
+	WIN: "Win",
+	LOSE: "Lose",
 };
 
 class Board {
-	constructor(elem, size, numberOfMines) {
+	constructor(elem, size, numberOfMines, counterEl) {
 		this.elem = elem;
 		this.size = size;
-		this.state = BOARDstateS.PLAYING;
+		this.state = BOARD_STATES.PLAYING;
 		this.store = {
 			numberOfMines,
 			numberOfMarks: numberOfMines,
 			cells: [],
 		};
+		this.counterEl = counterEl;
 		this.isFirstClicked = false;
 		this.init();
 	}
 
 	init() {
-		this.state = BOARDstateS.PLAYING;
+		this.isFirstClicked = false;
+		this.state = BOARD_STATES.PLAYING;
 		this.store.cells = [];
+		this.counterEl.textContent = `Mines left: ${this.store.numberOfMines}`;
 
 		for (let x = 0; x < this.size; x++) {
 			const row = [];
@@ -62,22 +65,15 @@ class Board {
 		});
 	}
 
-	//clean() {
-	//	this.store.cells.forEach((row) => {
-	//		row.forEach((cell) => {
-	//			cell.elem.remove();
-	//		});
-	//	});
-	//}
+	reset() {
+		this.store.cells.forEach((row) => {
+			row.forEach((cell) => {
+				cell.elem.remove();
+			});
+		});
 
-	//reset() {
-	//	this.clean();
-	//	this.init();
-	//}
-
-	//updateCounter() {
-	//	this._counterEl.innerText = this._numberOfMarks;
-	//}
+		this.init();
+	}
 
 	getMinesPositions(cell) {
 		const positions = [];
@@ -100,55 +96,83 @@ class Board {
 		return positions;
 	}
 
-	//checkWin() {
-	//	if (
-	//		!this.store.some((row) =>
-	//			row.some((cell) => cell.status === CELL_STATUSES.HIDDEN),
-	//		) &&
-	//		this._numberOfMarks === this._numberOfMines
-	//	) {
-	//		this.state = BOARDstateS.WIN;
-	//	}
-	//}
+	updateCounter() {
+		this.counterEl.textContent = `Mines left: ${this.store.numberOfMarks}`;
+	}
 
-	//checkLose() {
-	//	if (
-	//		this.store.some((row) =>
-	//			row.some((cell) => cell.status === CELL_STATUSES.MINED),
-	//		)
-	//	) {
-	//		this.state = BOARDstateS.LOSE;
-	//	}
-	//}
+	checkWin() {
+		let markedMinesCounter = 0;
+		let openedCellsCounter = 0;
 
-	//checkGameState() {
-	//	this.state = this.checkWin() || this.checkLose() || this.state;
-	//	console.log(this.state);
-	//	switch (this.state) {
-	//		case BOARDstateS.WIN:
-	//			break;
-	//		case BOARDstateS.LOSE: {
-	//			this.reset();
-	//			break;
-	//		}
-	//	}
-	//}
+		this.store.cells.forEach((row) =>
+			row.forEach((c) => {
+				if (c.isMine && c.status === CELL_STATUSES.MARKED) {
+					markedMinesCounter++;
+				}
+				if (
+					c.status === CELL_STATUSES.OPENED ||
+					c.status === CELL_STATUSES.MARKED
+				) {
+					openedCellsCounter++;
+				}
+			}),
+		);
 
-	//reset() {
-	//	this.state = BOARDstateS.PLAYING;
-	//	this.store = this.init();
-	//	this.clean();
-	//}
+		if (
+			markedMinesCounter === this.store.numberOfMines &&
+			openedCellsCounter === Math.pow(this.store.cells.length, 2)
+		) {
+			this.state = BOARD_STATES.WIN;
+			return true;
+		}
 
-	//clean() {
-	//	this.store.forEach((row) => {
-	//		row.forEach((cell) => {
-	//			cell.elem.remove();
-	//		});
-	//	});
+		return false;
+	}
 
-	//	this.updateCounter();
-	//}
+	checkLose() {
+		const isMineOpened = this.store.cells.some((row) =>
+			row.some((c) => c.status === CELL_STATUSES.MINED),
+		);
+
+		if (isMineOpened) {
+			this.state = BOARD_STATES.LOSE;
+			return true;
+		}
+
+		return false;
+	}
+
+	checkGameState() {
+		const win = this.checkWin();
+		const lose = this.checkLose();
+
+		if (win || lose) {
+			this.store.cells.forEach((row) =>
+				row.forEach((cell) => {
+					cell.removeAllEventListeners();
+				}),
+			);
+		}
+
+		if (win) {
+			this.counterEl.textContent = BOARD_STATES.WIN;
+		}
+
+		if (lose) {
+			this.showAllBombs();
+			this.counterEl.textContent = BOARD_STATES.LOSE;
+		}
+	}
+
+	showAllBombs() {
+		this.store.cells.forEach((row) =>
+			row.forEach((cell) => {
+				if (cell.isMine) {
+					cell.status = CELL_STATUSES.MINED;
+				}
+			}),
+		);
+	}
 }
 
 export default Board;
