@@ -121,39 +121,39 @@ class Cell {
 	}
 
 	onKeyDownHandler(e) {
-		if (e.code === "KeyW") {
+		if (e.code === "KeyW" || e.code === "ArrowUp") {
 			if (this.x === 0) {
-				this.board.store.cells[this.board.store.cells.length - 1]?.[
+				this.board.store.cells[this.board.store.cells.length - 1][
 					this.y
 				].elem.focus();
 			} else {
-				this.board.store.cells[this.x - 1]?.[this.y].elem.focus();
+				this.board.store.cells[this.x - 1][this.y].elem.focus();
 			}
 		}
 
-		if (e.code === "KeyS") {
+		if (e.code === "KeyS" || e.code === "ArrowDown") {
 			if (this.x === this.board.store.cells.length - 1) {
-				this.board.store.cells[0]?.[this.y].elem.focus();
+				this.board.store.cells[0][this.y].elem.focus();
 			} else {
-				this.board.store.cells[this.x + 1]?.[this.y].elem.focus();
+				this.board.store.cells[this.x + 1][this.y].elem.focus();
 			}
 		}
 
-		if (e.code === "KeyD") {
+		if (e.code === "KeyD" || e.code === "ArrowRight") {
 			if (this.y === this.board.store.cells.length - 1) {
-				this.board.store.cells[this.x]?.[0].elem.focus();
+				this.board.store.cells[this.x][0].elem.focus();
 			} else {
-				this.board.store.cells[this.x]?.[this.y + 1].elem.focus();
+				this.board.store.cells[this.x][this.y + 1].elem.focus();
 			}
 		}
 
-		if (e.code === "KeyA") {
+		if (e.code === "KeyA" || e.code === "ArrowLeft") {
 			if (this.y === 0) {
-				this.board.store.cells[this.x]?.[
+				this.board.store.cells[this.x][
 					this.board.store.cells.length - 1
 				].elem.focus();
 			} else {
-				this.board.store.cells[this.x]?.[this.y - 1].elem.focus();
+				this.board.store.cells[this.x][this.y - 1].elem.focus();
 			}
 		}
 
