@@ -1,72 +1,98 @@
-import Cell from "./Cell.js";
+import Cell, { CELL_STATUSES } from "./Cell.js";
 
 function getRandom(number) {
 	return Math.floor(Math.random() * number);
 }
 
-const BOARD_STATES = {
+const BOARDstateS = {
 	PLAYING: "playing",
 	WIN: "win",
 	LOSE: "lose",
 };
 
 class Board {
-	constructor(elem, size, numberOfMines, counterEl) {
-		this._elem = elem;
-		this._size = size;
-		this._numberOfMines = numberOfMines;
-		this._numberOfMarks = numberOfMines;
-		this._counterEl = counterEl;
-		this._state = BOARD_STATES.PLAYING;
-		this._store = this.init();
-		this.create();
+	constructor(elem, size, numberOfMines) {
+		this.elem = elem;
+		this.size = size;
+		this.state = BOARDstateS.PLAYING;
+		this.store = {
+			numberOfMines,
+			numberOfMarks: numberOfMines,
+			cells: [],
+		};
+		this.isFirstClicked = false;
+		this.init();
 	}
 
 	init() {
-		const board = [];
-		const minesPositions = this.getMinesPositions();
+		this.state = BOARDstateS.PLAYING;
+		this.store.cells = [];
 
-		for (let x = 0; x < this._size; x++) {
+		for (let x = 0; x < this.size; x++) {
 			const row = [];
-			for (let y = 0; y < this._size; y++) {
-				const cell = new Cell(
-					this,
-					x,
-					y,
-					minesPositions.some((p) => p.x === x && p.y === y),
-				);
+			for (let y = 0; y < this.size; y++) {
+				const cell = new Cell(this, x, y);
 				row.push(cell);
 			}
-			board.push(row);
+			this.store.cells.push(row);
 		}
 
-		return board;
-	}
-
-	updateCounter() {
-		this._counterEl.innerText = this._numberOfMarks;
+		this.create();
 	}
 
 	create() {
-		this._store.forEach((row) => {
+		this.store.cells.forEach((row) => {
 			row.forEach((cell) => {
-				this._elem.append(cell.elem);
+				this.elem.append(cell.elem);
 			});
 		});
-
-		this.updateCounter();
 	}
 
-	getMinesPositions() {
-		const positions = [];
+	fill(firstClickedCell) {
+		this.isFirstClicked = true;
 
-		while (positions.length < this._numberOfMines) {
+		const minesPositions = this.getMinesPositions(firstClickedCell);
+
+		this.store.cells.forEach((row) => {
+			row.forEach((cell) => {
+				cell.isMine = minesPositions.some(
+					(p) => p.x === cell.x && p.y === cell.y,
+				);
+			});
+		});
+	}
+
+	//clean() {
+	//	this.store.cells.forEach((row) => {
+	//		row.forEach((cell) => {
+	//			cell.elem.remove();
+	//		});
+	//	});
+	//}
+
+	//reset() {
+	//	this.clean();
+	//	this.init();
+	//}
+
+	//updateCounter() {
+	//	this._counterEl.innerText = this._numberOfMarks;
+	//}
+
+	getMinesPositions(cell) {
+		const positions = [];
+		const nearbyCells = cell.getNearbyCells();
+
+		while (positions.length < this.store.numberOfMines) {
 			const position = {
-				x: getRandom(this._size),
-				y: getRandom(this._size),
+				x: getRandom(this.size),
+				y: getRandom(this.size),
 			};
 
-			if (!positions.some((p) => p.x === position.x && p.y === position.y)) {
+			if (
+				!positions.some((p) => p.x === position.x && p.y === position.y) &&
+				!nearbyCells.some((c) => c.x === position.x && c.y === position.y)
+			) {
 				positions.push(position);
 			}
 		}
@@ -74,29 +100,55 @@ class Board {
 		return positions;
 	}
 
-	set state(state) {
-		this._state = state;
-	}
+	//checkWin() {
+	//	if (
+	//		!this.store.some((row) =>
+	//			row.some((cell) => cell.status === CELL_STATUSES.HIDDEN),
+	//		) &&
+	//		this._numberOfMarks === this._numberOfMines
+	//	) {
+	//		this.state = BOARDstateS.WIN;
+	//	}
+	//}
 
-	get store() {
-		return this._store;
-	}
+	//checkLose() {
+	//	if (
+	//		this.store.some((row) =>
+	//			row.some((cell) => cell.status === CELL_STATUSES.MINED),
+	//		)
+	//	) {
+	//		this.state = BOARDstateS.LOSE;
+	//	}
+	//}
 
-	get numberOfMarks() {
-		return this._numberOfMarks;
-	}
+	//checkGameState() {
+	//	this.state = this.checkWin() || this.checkLose() || this.state;
+	//	console.log(this.state);
+	//	switch (this.state) {
+	//		case BOARDstateS.WIN:
+	//			break;
+	//		case BOARDstateS.LOSE: {
+	//			this.reset();
+	//			break;
+	//		}
+	//	}
+	//}
 
-	set numberOfMarks(value) {
-		this._numberOfMarks = value;
-	}
+	//reset() {
+	//	this.state = BOARDstateS.PLAYING;
+	//	this.store = this.init();
+	//	this.clean();
+	//}
 
-	get numberOfMines() {
-		return this._numberOfMines;
-	}
+	//clean() {
+	//	this.store.forEach((row) => {
+	//		row.forEach((cell) => {
+	//			cell.elem.remove();
+	//		});
+	//	});
 
-	set numberOfMines(value) {
-		this._numberOfMines = value;
-	}
+	//	this.updateCounter();
+	//}
 }
 
 export default Board;

@@ -1,4 +1,6 @@
-const CELL_STATUSES = {
+import Board from "./Board.js";
+
+export const CELL_STATUSES = {
 	HIDDEN: "hidden",
 	MINED: "mined",
 	OPENED: "opened",
@@ -6,12 +8,12 @@ const CELL_STATUSES = {
 };
 
 class Cell {
-	constructor(board, x, y, isMine) {
-		this._board = board;
-		this._x = x;
-		this._y = y;
-		this._isMine = isMine;
-		this._elem = this.create();
+	constructor(board, x, y) {
+		this.board = board;
+		this.x = x;
+		this.y = y;
+		this.isMine = false;
+		this.elem = this.create();
 	}
 
 	create() {
@@ -36,7 +38,13 @@ class Cell {
 			return;
 		}
 
-		if (this._isMine) {
+		if (!this.board.isFirstClicked) {
+			this.board.fill(this);
+			this.reveal();
+			return;
+		}
+
+		if (this.isMine) {
 			this.status = CELL_STATUSES.MINED;
 			return;
 		}
@@ -44,12 +52,12 @@ class Cell {
 		this.status = CELL_STATUSES.OPENED;
 
 		const nearbyCells = this.getNearbyCells();
-		const mines = nearbyCells.filter((cell) => cell._isMine);
+		const mines = nearbyCells.filter((cell) => cell.isMine);
 
 		if (mines.length === 0) {
 			nearbyCells.forEach((cell) => cell.reveal());
 		} else {
-			this._elem.textContent = mines.length;
+			this.elem.textContent = mines.length;
 		}
 	}
 
@@ -62,25 +70,25 @@ class Cell {
 			return;
 		}
 
-		if (this._board.numberOfMines == 0) {
+		if (this.board.store.numberOfMines == 0) {
 			return;
 		}
 
 		if (this.status === CELL_STATUSES.MARKED) {
 			this.status = CELL_STATUSES.HIDDEN;
-			this._board.numberOfMarks++;
-			if (this._isMine) {
-				this._board.numberOfMines++;
-			}
+			//this.board.numberOfMarks++;
+			//if (this.isMine) {
+			//	this.board.numberOfMines++;
+			//}
 		} else {
 			this.status = CELL_STATUSES.MARKED;
-			this._board.numberOfMarks--;
-			if (this._isMine) {
-				this._board.numberOfMines--;
-			}
+			//this.board.numberOfMarks--;
+			//if (this.isMine) {
+			//	this.board.numberOfMines--;
+			//}
 		}
 
-		this._board.updateCounter();
+		//this.board.updateCounter();
 	}
 
 	getNearbyCells() {
@@ -88,22 +96,16 @@ class Cell {
 
 		for (let x = -1; x <= 1; x++) {
 			for (let y = -1; y <= 1; y++) {
-				if (this._x === x && this._y === y) continue;
-
-				const cell = this._board.store[this._x + x]?.[this._y + y];
+				const cell = this.board.store.cells[this.x + x]?.[this.y + y];
 
 				if (!cell) continue;
-				if (cell.status === "opened") continue;
+				if (cell.status === CELL_STATUSES.OPENED) continue;
 
 				cells.push(cell);
 			}
 		}
 
 		return cells;
-	}
-
-	get elem() {
-		return this._elem;
 	}
 
 	get status() {
