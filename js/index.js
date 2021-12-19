@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function init() {
 	const boardEl = document.querySelector(".board");
 	const boardSize = 12;
-	const numberOfMines = 25;
+	const numberOfMines = 20;
 	const counterEl = document.querySelector(".counter");
 	const resetBtn = document.querySelector(".reset-btn");
 

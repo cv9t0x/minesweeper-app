@@ -191,13 +191,6 @@ class Cell {
 			{ capture: true },
 		);
 		this.elem.addEventListener(
-			"mouseover",
-			(e) => {
-				e.stopImmediatePropagation();
-			},
-			{ capture: true },
-		);
-		this.elem.addEventListener(
 			"keydown",
 			(e) => {
 				e.stopImmediatePropagation();
