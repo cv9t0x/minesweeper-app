@@ -17,7 +17,7 @@ class Board {
 		this.state = BOARD_STATES.PLAYING;
 		this.store = {
 			numberOfMines,
-			numberOfMarks: numberOfMines,
+			numberOfMarks: 0,
 			cells: [],
 		};
 		this.counterEl = counterEl;
@@ -26,6 +26,7 @@ class Board {
 	}
 
 	init() {
+		this.store.numberOfMarks = this.store.numberOfMines;
 		this.isFirstClicked = false;
 		this.state = BOARD_STATES.PLAYING;
 		this.store.cells = [];
